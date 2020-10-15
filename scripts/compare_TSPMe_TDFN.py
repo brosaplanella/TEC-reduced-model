@@ -137,7 +137,7 @@ def compare_models(models, param, Crates, temperature, filename=None):
         # Plot voltage and error
         axes = add_plot(axes, solutions, error, Crate)
 
-    fig.suptitle("Ambient temperature: {}°C".format(temperature))
+    fig.suptitle("Ambient temperature: {} °C".format(temperature))
 
     fig.tight_layout()
     fig.subplots_adjust(top=0.88)
@@ -170,7 +170,9 @@ root = path.dirname(path.dirname(__file__))
 
 for temperature in temperatures:
     param = set_thermal_parameters(param, 20, 2.85e6, temperature)
-    fig = compare_models(models, param, Crates, temperature, filename="errors.txt")
+    fig = compare_models(
+        models, param, Crates, temperature, filename="errors_models.txt"
+    )
 
     fig.savefig(
         path.join(root, "figures", "comp_models_{}degC.png".format(temperature)),
