@@ -134,4 +134,4 @@ dmypy.json
 # Project folders and files
 data/
 figures/
-errors.txt
+errors_*
