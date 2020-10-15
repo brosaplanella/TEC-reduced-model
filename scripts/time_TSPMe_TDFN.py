@@ -56,7 +56,7 @@ for i, model in enumerate(models):
         tables[i].add_row(
             ["{}degC".format(temperature)]
             + [
-                "{:.2f} +- {:.2f}".format(np.average(time), np.std(time))
+                "{:.2f} +- {:.2f}".format(np.mean(time), np.std(time))
                 for time in times
             ]
         )
