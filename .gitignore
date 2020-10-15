@@ -131,6 +131,7 @@ dmypy.json
 # VSCode settings
 .vscode
 
-# Folders
+# Project folders and files
 data/
 figures/
+errors.txt
