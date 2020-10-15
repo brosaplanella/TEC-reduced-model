@@ -5,7 +5,7 @@
 import pybamm
 import numpy as np
 import matplotlib.pyplot as plt
-import os
+from os import path
 from set_parameters import set_thermal_parameters
 
 plt.rcParams.update({"font.size": 8})
@@ -159,22 +159,20 @@ models = [
 ]
 
 # Define parameter set Chen 2020 (see PyBaMM documentation for details)
-# This is the reference
+# This is the reference parameter set, which will be later adjusted
 param = pybamm.ParameterValues(chemistry=pybamm.parameter_sets.Chen2020)
-cp_factor = 2.85e6 / param.evaluate(pybamm.ThermalParameters().rho_eff_dim)
-h_factor = 20 / param.evaluate(pybamm.ThermalParameters().h_total_dim)
 
 # Change simulation parameters here
 temperatures = [0, 10, 25]  # in degC
 Crates = [0.5, 1, 2]
 
-root = os.path.dirname(os.path.dirname(__file__))
+root = path.dirname(path.dirname(__file__))
 
 for temperature in temperatures:
     param = set_thermal_parameters(param, 20, 2.85e6, temperature)
-    compare_models(models, param, Crates, temperature, filename="errors.txt")
+    fig = compare_models(models, param, Crates, temperature, filename="errors.txt")
 
-    plt.savefig(
-        os.path.join(root, "figures", "comp_models_{}degC.png".format(temperature)),
+    fig.savefig(
+        path.join(root, "figures", "comp_models_{}degC.png".format(temperature)),
         dpi=300,
     )
