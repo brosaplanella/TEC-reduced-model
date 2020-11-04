@@ -132,6 +132,5 @@ dmypy.json
 .vscode
 
 # Project folders and files
-data/
 figures/
 errors_*
