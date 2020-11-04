@@ -94,7 +94,7 @@ def plot_experimental_data(axes, Crate, temperature, cells_ignore):
             data["Temp Cell [degC]"][idx_start[0] : idx_end[1]],
             label=cell,
         )
-        pad = 5
+        pad = 4
 
         axes[0].annotate(
             "{}C".format(Crate),
