@@ -7,7 +7,7 @@ import numpy as np
 from prettytable import PrettyTable
 
 # Import auxiliary functions
-from define_parameters import define_thermal_parameters
+from tec_reduced_model.set_parameters import set_thermal_parameters
 
 pybamm.set_logging_level("WARNING")
 
@@ -37,7 +37,7 @@ tables = [PrettyTable([model.name, "C/2", "1C", "2C"]) for model in models]
 for i, model in enumerate(models):
     print("Running simulations for", model.name)
     for temperature in temperatures:
-        param = define_thermal_parameters(param, 20, 2.85e6, temperature)
+        param = set_thermal_parameters(param, 20, 2.85e6, temperature)
         times = [None] * len(Crates)
         for k, Crate in enumerate(Crates):
             print("Running simulation for {}C and {}degC".format(Crate, temperature))
@@ -55,10 +55,7 @@ for i, model in enumerate(models):
 
         tables[i].add_row(
             ["{}degC".format(temperature)]
-            + [
-                "{:.2f} +- {:.2f}".format(np.mean(time), np.std(time))
-                for time in times
-            ]
+            + ["{:.2f} +- {:.2f}".format(np.mean(time), np.std(time)) for time in times]
         )
 
 print()

@@ -6,12 +6,12 @@ import pybamm
 import numpy as np
 import matplotlib.pyplot as plt
 from os import path
-from set_parameters import (
+from tec_reduced_model.set_parameters import (
     set_thermal_parameters,
     set_experiment_parameters,
     set_ambient_temperature,
 )
-from process_experimental_data import import_thermal_data, get_idxs
+from tec_reduced_model.process_experimental_data import import_thermal_data, get_idxs
 
 plt.rcParams.update({"font.size": 8})
 

@@ -6,7 +6,7 @@ import pybamm
 import numpy as np
 import matplotlib.pyplot as plt
 from os import path
-from set_parameters import set_thermal_parameters
+from tec_reduced_model.set_parameters import set_thermal_parameters
 
 plt.rcParams.update({"font.size": 8})
 
