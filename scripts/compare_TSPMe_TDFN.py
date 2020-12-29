@@ -146,16 +146,24 @@ def compare_models(models, param, Crates, temperature, filename=None):
 
 
 # Define TSPMe using Integrated electrolyte conductivity submodel
-options = {"thermal": "lumped", "dimensionality": 0, "cell geometry": "arbitrary"}
-model_TSPMe = pybamm.lithium_ion.SPMe(options, build=False, name="TSPMe")
-model_TSPMe.submodels[
-    "electrolyte conductivity"
-] = pybamm.electrolyte_conductivity.Integrated(model_TSPMe.param)
-model_TSPMe.build_model()
-
 models = [
-    model_TSPMe,
-    pybamm.lithium_ion.DFN(options, name="TDFN"),
+    pybamm.lithium_ion.SPMe(
+        options={
+            "thermal": "lumped",
+            "dimensionality": 0,
+            "cell geometry": "arbitrary",
+            "electrolyte conductivity": "integrated",
+        },
+        name="TDFN",
+    ),
+    pybamm.lithium_ion.DFN(
+        options={
+            "thermal": "lumped",
+            "dimensionality": 0,
+            "cell geometry": "arbitrary",
+        },
+        name="TDFN",
+    ),
 ]
 
 # Define parameter set Chen 2020 (see PyBaMM documentation for details)
