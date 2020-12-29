@@ -74,6 +74,7 @@ def print_error(error, Crate, temperature, filename=None):
 
 def plot_experimental_data(axes, Crate, temperature, cells_ignore):
     dataset = import_thermal_data(Crate, temperature)
+    data_conc = {"time": [], "voltage": [], "temperature": []}
 
     for cell, data in dataset.items():
         if cell in cells_ignore:
@@ -101,13 +102,12 @@ def plot_experimental_data(axes, Crate, temperature, cells_ignore):
             xy=(0, 0.5),
             xytext=(-axes[0].yaxis.labelpad - pad, 0),
             xycoords=axes[0].yaxis.label,
-            textcoords='offset points',
-            size='large',
-            ha='right',
-            va='center',
+            textcoords="offset points",
+            size="large",
+            ha="right",
+            va="center",
         )
 
-        data_conc = {"time": [], "voltage": [], "temperature": []}
         data_conc["time"] = np.append(
             data_conc["time"],
             data["Time [s]"][idx_start[0] : idx_end[1]]
@@ -199,12 +199,15 @@ def compare_data(model, param, Crates, temperature, cells_ignore=None, filename=
 
 
 # Define TSPMe using Integrated electrolyte conductivity submodel
-options = {"thermal": "lumped", "dimensionality": 0, "cell geometry": "arbitrary"}
-model = pybamm.lithium_ion.SPMe(options, build=False, name="TSPMe")
-model.submodels[
-    "electrolyte conductivity"
-] = pybamm.electrolyte_conductivity.Integrated(model.param)
-model.build_model()
+model = pybamm.lithium_ion.SPMe(
+    options={
+        "thermal": "lumped",
+        "dimensionality": 0,
+        "cell geometry": "arbitrary",
+        "electrolyte conductivity": "integrated",
+    },
+    name="TDFN",
+)
 
 # Define parameter set Chen 2020 (see PyBaMM documentation for details)
 # This is the reference parameter set, which will be later adjusted
