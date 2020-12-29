@@ -4,6 +4,8 @@ install_requires = [
     "pybamm >= 0.3.0",
     "matplotlib",
     "prettytable",
+    "jax",
+    "jaxlib",
 ]
 
 setup(
