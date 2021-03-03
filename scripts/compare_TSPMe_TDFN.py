@@ -7,8 +7,25 @@ import numpy as np
 import matplotlib.pyplot as plt
 from os import path
 from tec_reduced_model.set_parameters import set_thermal_parameters
+from cycler import cycler
+from palettable.scientific.sequential import Batlow_4
 
-plt.rcParams.update({"font.size": 8})
+color_cycle = [
+    (0.005193, 0.098238, 0.349842),
+    (0.981354, 0.800406, 0.981267),
+    (0.511253, 0.510898, 0.193296),
+    (0.133298, 0.375282, 0.379395),
+    (0.946612, 0.614218, 0.419767),
+    (0.302379, 0.450282, 0.300122),
+    (0.066899, 0.263188, 0.377594),
+    (0.992900, 0.704852, 0.704114),
+    (0.754268, 0.565033, 0.211761),
+    (0.088353, 0.322167, 0.384731),
+]
+
+plt.rcParams.update(
+    {"font.size": 8, "axes.prop_cycle": cycler('color', color_cycle)}
+)
 
 pybamm.set_logging_level("WARNING")
 
@@ -63,49 +80,61 @@ def add_plot(axes, solutions, error, Crate):
         time = sol_TDFN["Time [s]"].entries
 
     axes[0, 0].plot(
-        sol_TDFN["Time [s]"](time),
+        # sol_TDFN["Time [s]"](time),
+        sol_TDFN["Discharge capacity [A.h]"](time),
         sol_TDFN["Terminal voltage [V]"](time),
         color="black",
         linestyle="dashed",
     )
 
     axes[0, 0].plot(
-        sol_TSPMe["Time [s]"](time),
+        # sol_TSPMe["Time [s]"](time),
+        sol_TSPMe["Discharge capacity [A.h]"](time),
         sol_TSPMe["Terminal voltage [V]"](time),
         label="{}C".format(Crate),
     )
 
-    axes[0, 0].set_xlabel("Time (s)")
+    # axes[0, 0].set_xlabel("Time (s)")
+    axes[0, 0].set_xlabel("Discharge capacity (A h)")
     axes[0, 0].set_ylabel("Voltage (V)")
+    axes[0, 0].legend(loc="lower left")
 
-    axes[0, 1].plot(time, np.abs(error["V"]) * 1e3)
-    axes[0, 1].set_xlabel("Time (s)")
+    axes[0, 1].plot(
+        # time,
+        sol_TDFN["Discharge capacity [A.h]"](time), 
+        np.abs(error["V"]) * 1e3)
+    # axes[0, 1].set_xlabel("Time (s)")
+    axes[0, 1].set_xlabel("Discharge capacity (A h)")
     axes[0, 1].set_ylabel("Voltage error (mV)")
 
     axes[1, 0].plot(
-        sol_TDFN["Time [s]"](time),
+        # sol_TDFN["Time [s]"](time),
+        sol_TDFN["Discharge capacity [A.h]"](time),
         sol_TDFN["X-averaged cell temperature [K]"](time) - 273.15,
         color="black",
         linestyle="dashed",
     )
 
     axes[1, 0].plot(
-        sol_TSPMe["Time [s]"](time),
+        # sol_TSPMe["Time [s]"](time),
+        sol_TSPMe["Discharge capacity [A.h]"](time),
         sol_TSPMe["X-averaged cell temperature [K]"](time) - 273.15,
         label="{}C".format(Crate),
     )
 
-    axes[1, 0].set_xlabel("Time (s)")
+    # axes[1, 0].set_xlabel("Time (s)")
+    axes[1, 0].set_xlabel("Discharge capacity (A h)")
     axes[1, 0].set_ylabel("Temperature (°C)")
 
     axes[1, 1].plot(
-        time,
+        # time,
+        sol_TDFN["Discharge capacity [A.h]"](time),
         np.abs(error["T"]),
         label="{}C".format(Crate),
     )
-    axes[1, 1].set_xlabel("Time (s)")
+    # axes[1, 1].set_xlabel("Time (s)")
+    axes[1, 1].set_xlabel("Discharge capacity (A h)")
     axes[1, 1].set_ylabel("Temperature error (°C)")
-    axes[1, 1].legend()
 
     return axes
 
@@ -154,7 +183,7 @@ models = [
             "cell geometry": "arbitrary",
             "electrolyte conductivity": "integrated",
         },
-        name="TDFN",
+        name="TSPMe",
     ),
     pybamm.lithium_ion.DFN(
         options={

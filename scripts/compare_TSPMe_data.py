@@ -12,8 +12,26 @@ from tec_reduced_model.set_parameters import (
     set_ambient_temperature,
 )
 from tec_reduced_model.process_experimental_data import import_thermal_data, get_idxs
+from cycler import cycler
+from palettable.scientific.sequential import Batlow_5
 
-plt.rcParams.update({"font.size": 8})
+color_cycle = [
+    (0.005193, 0.098238, 0.349842),
+    (0.981354, 0.800406, 0.981267),
+    (0.511253, 0.510898, 0.193296),
+    (0.133298, 0.375282, 0.379395),
+    (0.946612, 0.614218, 0.419767),
+    (0.302379, 0.450282, 0.300122),
+    (0.066899, 0.263188, 0.377594),
+    (0.992900, 0.704852, 0.704114),
+    (0.754268, 0.565033, 0.211761),
+    (0.088353, 0.322167, 0.384731),
+]
+
+plt.rcParams.update(
+    {"font.size": 8, "axes.prop_cycle": cycler('color', color_cycle)}
+)
+
 
 pybamm.set_logging_level("INFO")
 
@@ -88,12 +106,16 @@ def plot_experimental_data(axes, Crate, temperature, cells_ignore):
             - data["Time [s]"][idx_start[0]],
             data["Voltage [V]"][idx_start[0] : idx_end[1]],
             label=cell,
+            linewidth=1,
+            ls="--"
         )
         axes[1].plot(
             data["Time [s]"][idx_start[0] : idx_end[1]]
             - data["Time [s]"][idx_start[0]],
             data["Temp Cell [degC]"][idx_start[0] : idx_end[1]],
             label=cell,
+            linewidth=1,
+            ls="--"
         )
         pad = 4
 
@@ -125,19 +147,33 @@ def plot_experimental_data(axes, Crate, temperature, cells_ignore):
 
 
 def plot_model_solutions(axes, solution, Crate, temperature):
+    if solution.model.name == "TSPMe":
+        ls = "-"
+        color = "black"
+        linewidth = 0.75
+    else:
+        ls = ":"
+        color = "gray"
+        linewidth = 1
+
     axes[0].plot(
         solution["Time [s]"].entries,
         solution["Terminal voltage [V]"].entries,
-        color="black",
-        label="TSPMe",
+        color=color,
+        label=solution.model.name,
+        ls=ls,
+        linewidth=linewidth,
     )
 
-    axes[0].scatter(
-        0,
-        solution["X-averaged battery open circuit voltage [V]"].entries[0],
-        marker="x",
-        color="black",
-    )
+    if solution.model.name == "TSPMe":
+        axes[0].scatter(
+            0,
+            solution["X-averaged battery open circuit voltage [V]"].entries[0],
+            s=15,
+            marker="x",
+            color="black",
+            linewidths=0.75
+        )
 
     axes[0].set_xlabel("Time (s)")
     axes[0].set_ylabel("Voltage (V)")
@@ -145,8 +181,10 @@ def plot_model_solutions(axes, solution, Crate, temperature):
     axes[1].plot(
         solution["Time [s]"].entries,
         solution["X-averaged cell temperature [K]"].entries - 273.15,
-        color="black",
-        label="TSPMe",
+        color=color,
+        label=solution.model.name,
+        ls=ls,
+        linewidth=linewidth,
     )
 
     axes[1].set_xlabel("Time (s)")
@@ -159,7 +197,7 @@ def plot_model_solutions(axes, solution, Crate, temperature):
     return axes
 
 
-def compare_data(model, param, Crates, temperature, cells_ignore=None, filename=None):
+def compare_data(models, param, Crates, temperature, cells_ignore=None, filename=None):
     fig, axes = plt.subplots(3, 2, figsize=(5.7, 5.5))
 
     for k, Crate in enumerate(Crates):
@@ -174,21 +212,27 @@ def compare_data(model, param, Crates, temperature, cells_ignore=None, filename=
             period="30 seconds",
         )
 
-        simulation = pybamm.Simulation(
-            model,
-            parameter_values=param,
-            experiment=experiment,
-        )
-        simulation.solve()
-        solution = simulation.solution
+        solutions = []
 
         axes[k, :], data_conc = plot_experimental_data(
             axes[k, :], Crate, temperature, cells_ignore
         )
-        axes[k, :] = plot_model_solutions(axes[k, :], solution, Crate, temperature)
 
-        error = compute_error(solution, data_conc)
-        print_error(error, Crate, temperature, filename=filename)
+        for model in models:
+            simulation = pybamm.Simulation(
+                model,
+                parameter_values=param,
+                experiment=experiment,
+            )
+            simulation.solve()
+            solution = simulation.solution
+            solutions.append(solution)
+
+            axes[k, :] = plot_model_solutions(axes[k, :], solution, Crate, temperature)
+            error = compute_error(solution, data_conc)
+            idx = filename.index(".")
+            new_filename = filename[: idx] + "_" + model.name + filename[idx:]
+            print_error(error, Crate, temperature, filename=new_filename)
 
     fig.suptitle("Ambient temperature: {} °C".format(temperature))
 
@@ -199,15 +243,36 @@ def compare_data(model, param, Crates, temperature, cells_ignore=None, filename=
 
 
 # Define TSPMe using Integrated electrolyte conductivity submodel
-model = pybamm.lithium_ion.SPMe(
-    options={
-        "thermal": "lumped",
-        "dimensionality": 0,
-        "cell geometry": "arbitrary",
-        "electrolyte conductivity": "integrated",
-    },
-    name="TDFN",
-)
+# model = pybamm.lithium_ion.SPMe(
+#     options={
+#         "thermal": "lumped",
+#         "dimensionality": 0,
+#         "cell geometry": "arbitrary",
+#         "electrolyte conductivity": "integrated",
+#     },
+#     name="TSPMe",
+# )
+
+models = [
+    pybamm.lithium_ion.SPMe(
+        options={
+            "thermal": "lumped",
+            "dimensionality": 0,
+            "cell geometry": "arbitrary",
+            "electrolyte conductivity": "integrated",
+        },
+        name="TSPMe",
+    ),
+    pybamm.lithium_ion.DFN(
+        options={
+            "thermal": "lumped",
+            "dimensionality": 0,
+            "cell geometry": "arbitrary",
+        },
+        name="TDFN",
+    ),
+]
+
 
 # Define parameter set Chen 2020 (see PyBaMM documentation for details)
 # This is the reference parameter set, which will be later adjusted
@@ -223,7 +288,7 @@ root = path.dirname(path.dirname(__file__))
 for temperature in temperatures:
     param = set_thermal_parameters(param, 16, 2.32e6, temperature)
     fig = compare_data(
-        model,
+        models,
         param,
         Crates,
         temperature,

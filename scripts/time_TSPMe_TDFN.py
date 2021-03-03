@@ -20,7 +20,7 @@ models = [
             "cell geometry": "arbitrary",
             "electrolyte conductivity": "integrated",
         },
-        name="TDFN",
+        name="TSPMe",
     ),
     pybamm.lithium_ion.DFN(
         options={
@@ -36,7 +36,7 @@ models = [
 param = pybamm.ParameterValues(chemistry=pybamm.parameter_sets.Chen2020)
 
 # Change simulation parameters here
-N_solve = 2  # number of times to run the solver to get computational time
+N_solve = 20  # number of times to run the solver to get computational time
 temperatures = [0, 10, 25]  # in degC
 Crates = [0.5, 1, 2]
 
