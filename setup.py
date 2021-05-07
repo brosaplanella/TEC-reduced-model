@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 install_requires = [
-    "pybamm >= 0.3.0",
+    "pybamm == 0.4.0",
     "matplotlib",
     "prettytable",
     "jax",
