@@ -8,7 +8,7 @@ from tec_reduced_model.process_experimental_data import import_thermal_data, get
 
 
 def set_thermal_parameters(param, h, cp, T):
-    cp_factor = cp / param.evaluate(pybamm.ThermalParameters().rho_eff_dim)
+    cp_factor = cp / param.evaluate(pybamm.ThermalParameters().rho_eff_dim(T))
     h_factor = h / param.evaluate(pybamm.ThermalParameters().h_total_dim)
 
     param["Total heat transfer coefficient [W.m-2.K-1]"] *= h_factor
