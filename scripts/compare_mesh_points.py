@@ -48,7 +48,7 @@ for factor in mesh_factors:
         var_pts=var_pts,
         C_rate=Crate,
     )
-    sim.model.name 
+    sim.model.name
     sim.solve([0, 3600])
     sim.solution.model.name += " x{} mesh".format(factor)
     solutions.append(sim.solution)

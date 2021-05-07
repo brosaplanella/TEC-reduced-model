@@ -12,6 +12,7 @@ from tec_reduced_model.set_parameters import (
     set_ambient_temperature,
 )
 from tec_reduced_model.process_experimental_data import import_thermal_data, get_idxs
+from scipy.interpolate import interp1d
 
 plt.style.use(["science", "vibrant"])
 
@@ -21,6 +22,7 @@ plt.rcParams.update(
         "axes.labelsize": 10,
     }
 )
+
 
 pybamm.set_logging_level("INFO")
 
@@ -81,7 +83,10 @@ def print_error(error, Crate, temperature, filename=None):
 
 def plot_experimental_data(axes, Crate, temperature, cells_ignore):
     dataset = import_thermal_data(Crate, temperature)
-    data_conc = {"time": [], "voltage": [], "temperature": []}
+    voltage_fun = {}
+    temperature_fun = {}
+
+    t_end = 0
 
     for cell, data in dataset.items():
         if cell in cells_ignore:
@@ -90,49 +95,80 @@ def plot_experimental_data(axes, Crate, temperature, cells_ignore):
         idx_start, idx_end = get_idxs(data, Crate * 5, 5 / 3)
         if len(idx_end) == 1:
             idx_end = np.append(idx_end, len(data["Time [s]"]))
-        axes[0].plot(
-            data["Time [s]"][idx_start[0] : idx_end[1]]
-            - data["Time [s]"][idx_start[0]],
-            data["Voltage [V]"][idx_start[0] : idx_end[1]],
-            label=cell,
-            linewidth=1,
-            ls="--",
-        )
-        axes[1].plot(
-            data["Time [s]"][idx_start[0] : idx_end[1]]
-            - data["Time [s]"][idx_start[0]],
-            data["Temp Cell [degC]"][idx_start[0] : idx_end[1]],
-            label=cell,
-            linewidth=1,
-            ls="--",
-        )
-        pad = 4
 
-        axes[0].annotate(
-            "{}C".format(Crate),
-            xy=(0, 0.5),
-            xytext=(-axes[0].yaxis.labelpad - pad, 0),
-            xycoords=axes[0].yaxis.label,
-            textcoords="offset points",
-            size="large",
-            ha="right",
-            va="center",
+        t_end = max(
+            t_end, data["Time [s]"][idx_end[1] - 1] - data["Time [s]"][idx_start[0]]
         )
 
-        data_conc["time"] = np.append(
-            data_conc["time"],
-            data["Time [s]"][idx_start[0] : idx_end[1]]
-            - data["Time [s]"][idx_start[0]],
+        if data["Time [s]"][idx_start[0]] == data["Time [s]"][idx_start[0] + 1]:
+            data.drop([idx_start[0] + 1], inplace=True)
+
+        voltage_fun.update(
+            {
+                cell: interp1d(
+                    data["Time [s]"][idx_start[0] : idx_end[1]]
+                    - data["Time [s]"][idx_start[0]],
+                    data["Voltage [V]"][idx_start[0] : idx_end[1]],
+                    fill_value="extrapolate",
+                )
+            }
         )
-        data_conc["voltage"] = np.append(
-            data_conc["voltage"], data["Voltage [V]"][idx_start[0] : idx_end[1]]
-        )
-        data_conc["temperature"] = np.append(
-            data_conc["temperature"],
-            data["Temp Cell [degC]"][idx_start[0] : idx_end[1]],
+        temperature_fun.update(
+            {
+                cell: interp1d(
+                    data["Time [s]"][idx_start[0] : idx_end[1]]
+                    - data["Time [s]"][idx_start[0]],
+                    data["Temp Cell [degC]"][idx_start[0] : idx_end[1]],
+                    fill_value="extrapolate",
+                )
+            }
         )
 
-    return axes, data_conc
+    t_eval = np.linspace(0, t_end, num=1000)
+
+    voltage_data = []
+    temperature_data = []
+
+    for cell, V in voltage_fun.items():
+        V = voltage_fun[cell]
+        T = temperature_fun[cell]
+
+        voltage_data.append(V(t_eval))
+        temperature_data.append(T(t_eval))
+
+    V_mean = np.mean(np.array(voltage_data), axis=0)
+    V_std = np.std(np.array(voltage_data), axis=0)
+    T_mean = np.mean(np.array(temperature_data), axis=0)
+    T_std = np.std(np.array(temperature_data), axis=0)
+
+    axes[0].fill_between(
+        t_eval,
+        V_mean - V_std,
+        V_mean + V_std,
+        alpha=0.2,
+    )
+    axes[0].plot(t_eval, V_mean, label="data")
+    axes[1].fill_between(
+        t_eval,
+        T_mean - T_std,
+        T_mean + T_std,
+        alpha=0.2,
+    )
+    axes[1].plot(t_eval, T_mean, label="data")
+    pad = 4
+
+    axes[0].annotate(
+        "{}C".format(Crate),
+        xy=(0, 0.5),
+        xytext=(-axes[0].yaxis.labelpad - pad, 0),
+        xycoords=axes[0].yaxis.label,
+        textcoords="offset points",
+        size="large",
+        ha="right",
+        va="center",
+    )
+
+    return axes, {}
 
 
 def plot_model_solutions(axes, solution, Crate, temperature):
@@ -178,7 +214,9 @@ def plot_model_solutions(axes, solution, Crate, temperature):
 
     axes[1].set_xlabel("Time (s)")
     axes[1].set_ylabel("Cell temperature (°C)")
-    axes[1].legend()
+
+    if Crate == 0.5:
+        axes[1].legend()
 
     if temperature == 25 and Crate == 1:
         axes[1].set_yticks([25, 28, 31, 34, 37])
@@ -203,7 +241,7 @@ def compare_data(models, param, Crates, temperature, cells_ignore=None, filename
 
         solutions = []
 
-        axes[k, :], data_conc = plot_experimental_data(
+        axes[k, :], _ = plot_experimental_data(
             axes[k, :], Crate, temperature, cells_ignore
         )
 
@@ -218,10 +256,6 @@ def compare_data(models, param, Crates, temperature, cells_ignore=None, filename
             solutions.append(solution)
 
             axes[k, :] = plot_model_solutions(axes[k, :], solution, Crate, temperature)
-            error = compute_error(solution, data_conc)
-            idx = filename.index(".")
-            new_filename = filename[:idx] + "_" + model.name + filename[idx:]
-            print_error(error, Crate, temperature, filename=new_filename)
 
     fig.suptitle("Ambient temperature: {} °C".format(temperature))
 
@@ -232,7 +266,6 @@ def compare_data(models, param, Crates, temperature, cells_ignore=None, filename
 
 
 # Define models
-models = [
     pybamm.lithium_ion.SPMe(
         options={
             "thermal": "lumped",
@@ -272,10 +305,9 @@ for temperature in temperatures:
         Crates,
         temperature,
         cells_ignore=cells_ignore,
-        filename="errors_experiments.txt",
     )
 
     fig.savefig(
-        path.join(root, "figures", "comp_exp_{}degC.png".format(temperature)),
+        path.join(root, "figures", "comp_exp_{}degC_mean.png".format(temperature)),
         dpi=300,
     )
