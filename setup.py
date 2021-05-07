@@ -6,6 +6,7 @@ install_requires = [
     "prettytable",
     "jax",
     "jaxlib",
+    "SciencePlots",
 ]
 
 setup(
@@ -16,8 +17,8 @@ setup(
     packages=find_packages(),
     license="LICENSE",
     description='Code and data for the paper "Systematic derivation and validation of'
-    ' a reduced thermal-electrochemical model for lithium-ion batteries using'
+    " a reduced thermal-electrochemical model for lithium-ion batteries using"
     ' asymptotic methods" by Ferran Brosa Planella, Muhammad Sheikh and W. Dhammika'
-    ' Widanage (2020).',
+    " Widanage (2020).",
     install_requires=install_requires,
 )
