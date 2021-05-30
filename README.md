@@ -1,7 +1,7 @@
 [![DOI](https://zenodo.org/badge/303453380.svg)](https://zenodo.org/badge/latestdoi/303453380)
 
 # Systematic derivation and validation of a reduced thermal-electrochemical model for lithium-ion batteries using asymptotic methods
-Code and data for the paper "[Systematic derivation and validation of a reduced thermal-electrochemical model for lithium-ion batteries using asymptotic methods](https://arxiv.org/abs/2011.01611)" by Ferran Brosa Planella, Muhammad Sheikh and W. Dhammika Widanage (2020).
+Code and data for the paper "[Systematic derivation and validation of a reduced thermal-electrochemical model for lithium-ion batteries using asymptotic methods](https://doi.org/10.1016/j.electacta.2021.138524)" by Ferran Brosa Planella, Muhammad Sheikh and W. Dhammika Widanage (2021).
 
 ## What is in this repository?
 In this repository you can find the scripts used to generate the code for the paper.
@@ -9,11 +9,12 @@ In this repository you can find the scripts used to generate the code for the pa
 * Running `scripts/compare_TSPMe_TDFN.py` generates the figures to compare the TSPMe against the TDFN model, reproducing Figures 5-7 in the paper. It also produces `errors_models.txt` which records the error between models shown in Table 2 of the paper. Note that new data is appended to this file every time the script is run.
 * Running `scripts/compare_TSPMe_data.py` generates the figures to compare the TSPMe against experimental data, reproducing Figure 8-10 in the paper. It also produces `errors_experiments.txt` which records the error between TSPMe and experimental data shown in Table 5 of the paper. Note that new data is appended to this file every time the script is run.
 * Running `scripts/time_TSPMe_TDFN.py` calculates the solving time for each model, reproducing the results in Table 3 of the paper.
-* The scripts `process_experimental_data.py` and `set_parameters.py` contain auxiliary methods for the previous scripts.
+* The Jupyter notebooks in `notebooks` reproduce the scripts but in a more interactive format.
+* The scripts `process_experimental_data.py` and `set_parameters.py` contain auxiliary methods.
 
 ## How to cite the code or data?
 If you found the code or the data useful please cite our paper
-> F. Brosa Planella, M. Sheikh, and W. D. Widanage, [Systematic derivation and validation of a reduced thermal-electrochemical model for lithium-ion batteries using asymptotic methods](https://arxiv.org/abs/2011.01611), _arXiv:2011.01611_ (2020).
+> F. Brosa Planella, M. Sheikh, and W. D. Widanage, [Systematic derivation and validation of a reduced thermal-electrochemical model for lithium-ion batteries using asymptotic methods](https://doi.org/10.1016/j.electacta.2021.138524), _Electrochimica Acta_ *388* (2021) 138524.
 
 If you also find the code useful, apart from citing the paper above, please use the PyBaMM command
 
@@ -24,9 +25,14 @@ pybamm.print_citations()
 at the end of your script to print in the terminal the bibtex of all the references that have contributed to your code (model, parameters, solvers...).
 
 ## How to use the code?
-In order to run the code you need to install the developer version of PyBaMM, as the model needed is not yet on the released version. To install the developer version follow the instructions [here](https://pybamm.readthedocs.io/en/latest/install/install-from-source.html). Following the PyBaMM recommendations, we strongly recommend to install it in a Python virtual environment, in order not to alter any distribution Python files.
+In order to run the code you need to install this package. We strongly recommend to install it in a Python virtual environment, in order not to alter any distribution Python files. Assuming you work on Linux-based system you need to run:
 
-Then you can clone this repository and execute the scripts.
+1. Clone the repository
+1. Go into the `TEC-reduced-model` folder: `cd TEC-reduced-model`
+1. Create the virtual environment: `virtualenv env`
+1. Activate the virtual environment: `source env/bin/activate`
+1. Install the package: `pip install .`
 
+Then you can run the scripts and notebooks. If you encounter any bugs or errors please let us know either via email or raising a GitHub issue.
 
 
