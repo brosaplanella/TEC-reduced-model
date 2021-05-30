@@ -14,7 +14,7 @@ In this repository you can find the scripts used to generate the code for the pa
 
 ## How to cite the code or data?
 If you found the code or the data useful please cite our paper
-> F. Brosa Planella, M. Sheikh, and W. D. Widanage, [Systematic derivation and validation of a reduced thermal-electrochemical model for lithium-ion batteries using asymptotic methods](https://doi.org/10.1016/j.electacta.2021.138524), _Electrochimica Acta_ *388* (2021) 138524.
+> F. Brosa Planella, M. Sheikh, and W. D. Widanage, [Systematic derivation and validation of a reduced thermal-electrochemical model for lithium-ion batteries using asymptotic methods](https://doi.org/10.1016/j.electacta.2021.138524), _Electrochimica Acta_ 388 (2021) 138524.
 
 If you also find the code useful, apart from citing the paper above, please use the PyBaMM command
 
